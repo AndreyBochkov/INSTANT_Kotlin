@@ -1,0 +1,73 @@
+<resources>
+    <string name="app_name" translatable="false">INSTANT</string>
+    <string name="register_success">Register: Success!</string>
+    <string name="change_ikey_success">Change IK: Success!</string>
+    <string name="unlabeled_error">Unlabeled error</string>
+    <string name="duplicated_login_125">Duplicated login</string>
+    <string name="empty_credentials_126">Empty credentials</string>
+    <string name="unspecified_type_error">"Unknown server response type: "</string>
+    <string name="login_placeholder">Login</string>
+    <string name="greeting_message">Hello! Create account to continue. Account only needs a login, the server will identify you using cryptographic key stored in the data of this app. Don\'t clear the data of this app, as you will lose this account. Any usage of this app means that you read and agreed with INSTANT Privacy Policy and Terms Of Use.</string>
+    <string name="link_to_privacy_page">Open the Policy and Terms</string>
+    <string name="register_this_name">Register\nthis name!</string>
+    <string name="loading_response">Loading response…</string>
+    <string name="error_description">"Error: "</string>
+    <string name="copy_success">Copied!</string>
+    <string name="chat_label">Chat #%1d</string>
+    <string name="new_chat_label">New chat</string>
+    <string name="search_label">Search</string>
+    <string name="message_placeholder">Message…</string>
+    <string name="send_label">Send</string>
+    <string name="query_placeholder">Query…</string>
+    <string name="loading_label">Loading…</string>
+    <string name="message_label">Message #%1d</string>
+    <string name="search_for_users_label">"Search for users here - "</string>
+    <string name="load_more_label">Load more</string>
+    <string name="all_chats_label">All chats</string>
+    <string name="copy_request_id_label">Copy request ID</string>
+    <string name="open_official_site_label">Open official site</string>
+    <string name="fatal">The irrecoverable error occurred. Report it to the developer.</string>
+    <string name="chat_number">"Chat #%1$d named "</string>
+    <string name="reset_my_identity_key_label">Reset my Identity Key</string>
+    <string name="empty_search_results_label">Nothing here. [Re-]type the query! Type the beginning of the login.</string>
+    <string name="access_denied_124">Access denied!</string>
+    <string name="timeDefault" translatable="false">HH:mm:ss</string>
+    <string name="dateDefault" translatable="false">yyyy-MM-dd</string>
+    <string name="go_to_settings_label">Settings</string>
+    <string name="go_to_alerts_label">Official broadcasts</string>
+    <string name="return_to_chats_label">Back to the list</string>
+    <string name="return_to_chat_label">Return to the chat</string>
+    <string name="view_properties_label">View properties</string>
+    <string name="user_label">User #%1$d</string>
+    <string name="label_placeholder">New chat label…</string>
+    <string name="create_chat_label">Create chat!</string>
+    <string name="search_results_label">Search results</string>
+    <string name="add_as_admin_action">Add as Admin</string>
+    <string name="add_as_listener_action">Add as Listener</string>
+    <string name="admins_label">Admins</string>
+    <string name="no_people_label">Nothing here. Add some people!</string>
+    <string name="remove_admin_action">Remove Admin</string>
+    <string name="listeners_label">Listeners</string>
+    <string name="remove_listener_action">Remove Listener</string>
+    <string name="you_are_admin_label">You are an Admin</string>
+    <string name="you_are_listener_label">You are a Listener</string>
+    <string name="settings_label">Settings</string>
+    <string name="datetime_preferences_label">DateTime preferences</string>
+    <string name="date_placeholder">Date pattern…</string>
+    <string name="set_datetime_action">Set DateTime\npatterns</string>
+    <string name="time_placeholder">Time pattern…</string>
+    <string name="datetime_iso_8601">YMD-HMS (ISO 8601)</string>
+    <string name="datetime_american">American MDY-HMS</string>
+    <string name="datetime_rfc_5322">DMY-HMS (RFC 5322)</string>
+    <string name="datetime_greeting_text">Preferences must be Java DateTimeFormatter patterns and Formatter has strict rules. Read more about it yourself.\nExample: INSTANT has launched on %1$s, at %2$s</string>
+    <string name="alerts_label">Alerts</string>
+    <string name="alert_label">Alert #%1$d</string>
+    <string name="no_more_alerts_label">That\'s all. Wait for new alerts!</string>
+    <string name="chatproperties_label">"Properties of chat #%1$d named "</string>
+    <string name="offline_label">Offline…</string>
+    <string name="address" translatable="false">instant-messenger.ru</string>
+    <string name="server_address_label">Server address</string>
+    <string name="new_address_placeholder">New address…</string>
+    <string name="new_address_action">Connect!</string>
+    <string name="official_instance_label">Official instance</string>
+</resources>
