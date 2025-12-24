@@ -2,6 +2,11 @@ package com.instanttechnologies.instant.utils
 
 import android.content.Context
 import android.widget.Toast
+import kotlinx.serialization.KSerializer
+import kotlinx.serialization.builtins.ListSerializer
+import kotlinx.serialization.builtins.serializer
+import kotlinx.serialization.encoding.Decoder
+import kotlinx.serialization.encoding.Encoder
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -41,5 +46,19 @@ object DateTimeConverter {
         } catch (e: IllegalArgumentException) {
             pattern
         }
+    }
+}
+
+object ByteArrayAsUnsignedListSerializer : KSerializer<ByteArray> {
+    override val descriptor = ListSerializer(Int.serializer()).descriptor
+
+    override fun serialize(encoder: Encoder, value: ByteArray) {
+        val unsignedList = value.map { it.toInt() and 0xFF }
+        encoder.encodeSerializableValue(ListSerializer(Int.serializer()), unsignedList)
+    }
+
+    override fun deserialize(decoder: Decoder): ByteArray {
+        val unsignedList = decoder.decodeSerializableValue(ListSerializer(Int.serializer()))
+        return unsignedList.map { it.toByte() }.toByteArray()
     }
 }

@@ -41,6 +41,11 @@ fun INSTANTRegisterPage(
             )
         }
         item {
+            LayoutText(
+                stringResource(R.string.chats_hint)
+            )
+        }
+        item {
             LayoutButton(
                 text = stringResource(R.string.link_to_privacy_page),
                 event = linkToPrivacyPage

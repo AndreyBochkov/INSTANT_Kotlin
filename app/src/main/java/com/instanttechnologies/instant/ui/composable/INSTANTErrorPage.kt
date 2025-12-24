@@ -51,6 +51,12 @@ fun INSTANTErrorPage(
                 event = onOpenSite
             )
         }
+        item {
+            LayoutText(
+                stringResource(R.string.invalid_version_hint),
+                style = MaterialTheme.typography.bodyLarge
+            )
+        }
     }
 }
 

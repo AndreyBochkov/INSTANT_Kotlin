@@ -54,6 +54,12 @@ fun INSTANTTopAppBar(
             )
         },
         modifier = modifier,
+        colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
+            containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
+            titleContentColor = MaterialTheme.colorScheme.onSurface,
+            navigationIconContentColor = MaterialTheme.colorScheme.onSurface,
+            actionIconContentColor = MaterialTheme.colorScheme.onSurface
+        ),
         navigationIcon = {
             IconButton(onClick = easterEgg) {
                 AnimatedVisibility(easterEggParameter) {
@@ -102,7 +108,7 @@ fun INSTANTTopAppBar(
                             DropdownMenuItem(
                                 text = {
                                     LayoutText(
-                                        stringResource(R.string.go_to_settings_label)
+                                        stringResource(R.string.settings_label)
                                     )
                                 },
                                 onClick = {
@@ -126,7 +132,7 @@ fun INSTANTTopAppBar(
                             DropdownMenuItem(
                                 text = {
                                     LayoutText(
-                                        stringResource(R.string.go_to_settings_label)
+                                        stringResource(R.string.settings_label)
                                     )
                                 },
                                 onClick = {

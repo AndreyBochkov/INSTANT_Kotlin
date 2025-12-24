@@ -11,7 +11,7 @@
     <string name="login_placeholder">Логин</string>
     <string name="greeting_message">Добро пожаловать! Создайте аккаунт, чтобы продолжить. Необходим только логин, потому что идентификация пользователей на сервере происходит при помощи криптографических ключей, записанных в памяти приложения. Не очищайте память приложения, иначе потеряете доступ к аккаунту. Любое дальнейшее использование приложения будет означать ваше согласие с Политикой конфиденциальности и Условиями использования, размещенными на сайте INSTANT.</string>
     <string name="link_to_privacy_page">Открыть Политику и Условия</string>
-    <string name="register_this_name">Зарегистрировать\nэтот логин!</string>
+    <string name="register_this_name">Зарегистрировать этот логин!</string>
     <string name="loading_response">Загрузка ответа сервера…</string>
     <string name="error_description">"Ошибка: "</string>
     <string name="new_chat_label">Новый чат</string>
@@ -20,7 +20,7 @@
     <string name="send_label">Отправить</string>
     <string name="query_placeholder">Запрос…</string>
     <string name="loading_label">Загрузка…</string>
-    <string name="message_label">Номер: %1d</string>
+    <string name="message_label">Номер: №%1d</string>
     <string name="search_for_users_label">"Ищите пользователей тут - "</string>
     <string name="load_more_label">Загрузить ещё</string>
     <string name="all_chats_label">Все чаты</string>
@@ -31,19 +31,19 @@
     <string name="reset_my_identity_key_label">Новый идентиф. ключ</string>
     <string name="empty_search_results_label">Ничего нет. [Пере-]напечатайте запрос! Укажите начало искомого логина.</string>
     <string name="access_denied_124">Нет доступа!</string>
-    <string name="go_to_settings_label">Настройки</string>
     <string name="go_to_alerts_label">Официальные оповещения</string>
     <string name="return_to_chats_label">К списку чатов</string>
     <string name="return_to_chat_label">Обратно к чату</string>
     <string name="view_properties_label">Подробно о чате</string>
-    <string name="user_label">Пользователь №%1$d</string>
+    <string name="user_label">Пользователь №%1d</string>
     <string name="label_placeholder">Название нового чата…</string>
     <string name="create_chat_label">Создать чат!</string>
     <string name="search_results_label">Результаты поиска</string>
     <string name="add_as_admin_action">Добавить как Администратора</string>
     <string name="add_as_listener_action">Добавить как Слушателя</string>
     <string name="admins_label">Администраторы</string>
-    <string name="no_people_label">Никого. Выберите людей в поиске!</string>
+    <string name="add_people_label">Никого. Выберите людей в поиске!</string>
+    <string name="no_people_label">Никого.</string>
     <string name="remove_admin_action">Удалить Администратора</string>
     <string name="listeners_label">Слушатели</string>
     <string name="remove_listener_action">Удалить Слушателя</string>
@@ -52,14 +52,14 @@
     <string name="settings_label">Настройки</string>
     <string name="datetime_preferences_label">Настройки даты-времени</string>
     <string name="date_placeholder">Формат даты…</string>
-    <string name="set_datetime_action">Установить\nтакой формат</string>
+    <string name="set_datetime_action">Установить такой формат</string>
     <string name="time_placeholder">Формат времени…</string>
     <string name="datetime_rfc_5322">ДМГ-ЧМС (RFC 5322)</string>
-    <string name="datetime_greeting_text">Форматы даты и времени - паттерны Java DateTimeFormatter, у него есть чёткие правила. Прочитайте о них самостоятельно.\nПример: INSTANT был запущен %1$s, в %2$s</string>
+    <string name="datetime_greeting_text">Форматы даты и времени - паттерны Java DateTimeFormatter, у него есть чёткие правила. Прочитайте о них самостоятельно. Пример: INSTANT был запущен %1s, в %2s</string>
     <string name="alerts_label">Оповещения</string>
-    <string name="alert_label">Оповещение №%1$d</string>
+    <string name="alert_label">Оповещение №%1d</string>
     <string name="no_more_alerts_label">Больше ничего. Оповещения придут со временем!</string>
-    <string name="chatproperties_label">"Подробно о чате №%1$d, "</string>
+    <string name="chatproperties_label">"Подробно о чате №%1d, "</string>
     <string name="offline_label">Нет связи…</string>
     <string name="server_address_label">Адрес сервера</string>
     <string name="new_address_placeholder">Новый адрес…</string>
@@ -67,4 +67,6 @@
     <string name="official_instance_label">Адрес официального сервера</string>
     <string name="datetime_iso_8601">ГМД-ЧМС (ISO 8601)</string>
     <string name="datetime_american">Американский МДГ-ЧМС</string>
+    <string name="invalid_version_hint">Ошибки, упоминающие \"неверную версию\" наверняка вызваны отсутствием обновлений. Установите их с официального сайта.</string>
+    <string name="chats_hint">В INSTANT только группы, называемые \"чатами\". В чате есть администраторы, которые могут туда писать, и слушатели.</string>
 </resources>

@@ -146,6 +146,12 @@ fun INSTANTSettingsPage(
                 },
                 style = MaterialTheme.typography.bodyMedium
             )
+            HorizontalDivider()
+        }
+        item {
+            LayoutText(
+                stringResource(R.string.chats_hint)
+            )
         }
     }
 }

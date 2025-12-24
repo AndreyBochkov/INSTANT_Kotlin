@@ -170,7 +170,7 @@ fun INSTANTSearchPage(
             )
             if (admins.isEmpty()) {
                 HorizontalDivider()
-                LayoutText(stringResource(R.string.no_people_label))
+                LayoutText(stringResource(R.string.add_people_label))
             }
         }
         items(admins) {
@@ -227,7 +227,7 @@ fun INSTANTSearchPage(
             )
             if (listeners.isEmpty()) {
                 HorizontalDivider()
-                LayoutText(stringResource(R.string.no_people_label))
+                LayoutText(stringResource(R.string.add_people_label))
                 HorizontalDivider()
             }
         }
@@ -244,7 +244,7 @@ fun INSTANTSearchPage(
                     style = MaterialTheme.typography.headlineSmall
                 )
                 DropdownMenu(
-                    expanded = 7 == it.userid,
+                    expanded = choice == it.userid,
                     onDismissRequest = {
                         choice = 0
                     }

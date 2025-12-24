@@ -1,11 +1,7 @@
 package com.instanttechnologies.instant.data
 
-import kotlinx.serialization.KSerializer
+import com.instanttechnologies.instant.utils.ByteArrayAsUnsignedListSerializer
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.builtins.ListSerializer
-import kotlinx.serialization.builtins.serializer
-import kotlinx.serialization.encoding.Decoder
-import kotlinx.serialization.encoding.Encoder
 
 @Serializable
 data class Chat(
@@ -133,19 +129,5 @@ data class GetMessagesResponse( // 56
 //GotMessageAck [91]SyncMessage
 
 //RotateKeys [92]
-
-object ByteArrayAsUnsignedListSerializer : KSerializer<ByteArray> {
-    override val descriptor = ListSerializer(Int.serializer()).descriptor
-
-    override fun serialize(encoder: Encoder, value: ByteArray) {
-        val unsignedList = value.map { it.toInt() and 0xFF }
-        encoder.encodeSerializableValue(ListSerializer(Int.serializer()), unsignedList)
-    }
-
-    override fun deserialize(decoder: Decoder): ByteArray {
-        val unsignedList = decoder.decodeSerializableValue(ListSerializer(Int.serializer()))
-        return unsignedList.map { it.toByte() }.toByteArray()
-    }
-}
 
 //ChangeIKeyResponse [90]

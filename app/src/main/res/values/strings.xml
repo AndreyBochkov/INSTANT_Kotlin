@@ -33,19 +33,19 @@
     <string name="access_denied_124">Access denied!</string>
     <string name="timeDefault" translatable="false">HH:mm:ss</string>
     <string name="dateDefault" translatable="false">yyyy-MM-dd</string>
-    <string name="go_to_settings_label">Settings</string>
     <string name="go_to_alerts_label">Official broadcasts</string>
     <string name="return_to_chats_label">Back to the list</string>
     <string name="return_to_chat_label">Return to the chat</string>
     <string name="view_properties_label">View properties</string>
-    <string name="user_label">User #%1$d</string>
+    <string name="user_label">User #%1d</string>
     <string name="label_placeholder">New chat label…</string>
     <string name="create_chat_label">Create chat!</string>
     <string name="search_results_label">Search results</string>
     <string name="add_as_admin_action">Add as Admin</string>
     <string name="add_as_listener_action">Add as Listener</string>
     <string name="admins_label">Admins</string>
-    <string name="no_people_label">Nothing here. Add some people!</string>
+    <string name="add_people_label">No one here. Add some people!</string>
+    <string name="no_people_label">No people here.</string>
     <string name="remove_admin_action">Remove Admin</string>
     <string name="listeners_label">Listeners</string>
     <string name="remove_listener_action">Remove Listener</string>
@@ -59,15 +59,17 @@
     <string name="datetime_iso_8601">YMD-HMS (ISO 8601)</string>
     <string name="datetime_american">American MDY-HMS</string>
     <string name="datetime_rfc_5322">DMY-HMS (RFC 5322)</string>
-    <string name="datetime_greeting_text">Preferences must be Java DateTimeFormatter patterns and Formatter has strict rules. Read more about it yourself.\nExample: INSTANT has launched on %1$s, at %2$s</string>
+    <string name="datetime_greeting_text">Preferences must be Java DateTimeFormatter patterns and Formatter has strict rules. Read more about it yourself. Example: INSTANT has launched on %1s, at %2s</string>
     <string name="alerts_label">Alerts</string>
-    <string name="alert_label">Alert #%1$d</string>
+    <string name="alert_label">Alert #%1d</string>
     <string name="no_more_alerts_label">That\'s all. Wait for new alerts!</string>
-    <string name="chatproperties_label">"Properties of chat #%1$d named "</string>
+    <string name="chatproperties_label">"Properties of chat #%1d named "</string>
     <string name="offline_label">Offline…</string>
     <string name="address" translatable="false">instant-messenger.ru</string>
     <string name="server_address_label">Server address</string>
     <string name="new_address_placeholder">New address…</string>
     <string name="new_address_action">Connect!</string>
     <string name="official_instance_label">Official instance</string>
+    <string name="invalid_version_hint">Errors, which are mentioning \"Invalid version\", may be caused by an outdated app. Download new version using the official site!</string>
+    <string name="chats_hint">In INSTANT there are only groups of users named \"chats\". Users in the chat can be admins, who and only who can send messages in this chat, and listeners.</string>
 </resources>
