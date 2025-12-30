@@ -69,4 +69,6 @@
     <string name="datetime_iso_8601">TBH-JMD (ISO 8601)</string>
     <string name="invalid_version_hint">Kesalahan yang menyebutkan \"versi yang salah\" pasti disebabkan oleh tidak adanya pembaruan. Instal pembaruan tersebut dari situs web resmi.</string>
     <string name="chats_hint">Di INSTANT hanya ada grup yang disebut \"chat\". Di chat ada administrator yang dapat menulis di sana, dan pendengar.</string>
+    <string name="login_denied_123">Karakter yang tidak diperbolehkan!</string>
+    <string name="login_hint">Dalam nama pengguna, hanya huruf Latin, angka, dan garis bawah yang boleh digunakan.</string>
 </resources>

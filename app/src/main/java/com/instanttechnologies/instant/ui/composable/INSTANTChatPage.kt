@@ -27,7 +27,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Devices
 import androidx.compose.ui.tooling.preview.Preview
 import com.instanttechnologies.instant.R
-import com.instanttechnologies.instant.data.Chat
+import com.instanttechnologies.instant.data.ChatProperties
 import com.instanttechnologies.instant.data.Message
 import com.instanttechnologies.instant.data.User
 import com.instanttechnologies.instant.utils.DateTimeConverter
@@ -41,12 +41,12 @@ fun INSTANTChatPage(
     modifier: Modifier = Modifier,
     onSendMessageRequest: (String) -> Unit,
     messages: List<Message>,
-    admins: List<User>,
     returnToChats: () -> Unit,
     isLoading: Boolean,
     isConnected: Boolean,
     onGetMessagesRequest: (Int) -> Unit,
-    chat: Chat
+    chat: ChatProperties,
+    me: Int
 ) {
     BackHandler {
         returnToChats()
@@ -109,21 +109,24 @@ fun INSTANTChatPage(
                     Column(
                         modifier = Modifier.weight(1f)
                             .background(
-                                color = MaterialTheme.colorScheme.secondary,
+                                color = if (message.sender == me) MaterialTheme.colorScheme.tertiary
+                                else MaterialTheme.colorScheme.secondary,
                                 shape = messageShape
                             )
                             .padding(dimensionResource(R.dimen.small_padding)),
                         horizontalAlignment = Alignment.Start
                     ) {
                         LayoutText(
-                            text = admins.firstOrNull { it.userid == message.sender }?.login?:("<${message.sender}>"),
+                            text = "${chat.admins.firstOrNull { it.userid == message.sender }?.login?:"???"}, ${stringResource(R.string.user_label, message.sender)}",
                             style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.secondaryContainer
+                            color = if (message.sender == me) MaterialTheme.colorScheme.tertiaryContainer
+                            else MaterialTheme.colorScheme.secondaryContainer
                         )
                         LayoutText(
                             text = message.body,
                             style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onSecondary
+                            color = if (message.sender == me) MaterialTheme.colorScheme.onTertiary
+                            else MaterialTheme.colorScheme.onSecondary
                         )
                     }
                     Column(
@@ -198,28 +201,30 @@ fun ChatPreview() {
                     sender = 2
                 ),
             ),
-        admins = listOf(
-            User(
-                userid = 0,
-                login = "John Doe"
-            ),
-            User(
-                userid = 1,
-                login = "Alice Brown"
-            ),
-            User(
-                userid = 2,
-                login = "creative_name_3000"
-            ),
-        ),
         returnToChats = {},
         isLoading = true,
         isConnected = true,
         onGetMessagesRequest = {},
-        chat = Chat(
+        chat = ChatProperties(
             chatid = 0,
-            label = "dummy_user",
-            cansend = true
+            label = "dummy_chat",
+            cansend = true,
+            admins = listOf(
+                    User(
+                        userid = 0,
+                        login = "John Doe"
+                    ),
+                    User(
+                        userid = 1,
+                        login = "Alice Brown"
+                    ),
+                    User(
+                        userid = 2,
+                        login = "creative_name_3000"
+                    ),
+                ),
+            listeners = emptyList()
         ),
+        me = 0
     )
 }

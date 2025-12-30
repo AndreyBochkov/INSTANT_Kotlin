@@ -72,4 +72,6 @@
     <string name="official_instance_label">Official instance</string>
     <string name="invalid_version_hint">Errors, which are mentioning \"Invalid version\", may be caused by an outdated app. Download new version using the official site!</string>
     <string name="chats_hint">In INSTANT there are only groups of users named \"chats\". Users in the chat can be admins, who and only who can send messages in this chat, and listeners.</string>
+    <string name="login_denied_123">Restricted symbols!</string>
+    <string name="login_hint">INSTANT login must contain only only English letters, numbers and low dash.</string>
 </resources>

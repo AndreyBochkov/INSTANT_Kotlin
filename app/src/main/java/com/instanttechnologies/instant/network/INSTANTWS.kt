@@ -16,6 +16,7 @@ import com.instanttechnologies.instant.data.SearchRequest
 import com.instanttechnologies.instant.data.SendMessageRequest
 import com.instanttechnologies.instant.data.SyncMessage
 import com.instanttechnologies.instant.data.User
+import com.instanttechnologies.instant.data.WhoAmIResponse
 import com.instanttechnologies.instant.security.HandshakeHelper
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -75,7 +76,9 @@ class INSTANTWS(
                         _incomingMessages.postValue(INSTANTWSMessage.Ready(msgType == 1, handshakeHelper.requestID))
                     }
                     51 -> {
-                        _incomingMessages.postValue(INSTANTWSMessage.Register)
+                        val dec = handshakeHelper.decrypt(payload)
+                        val resp = Json.decodeFromString<WhoAmIResponse>(dec.decodeToString())
+                        _incomingMessages.postValue(INSTANTWSMessage.Register(resp))
                     }
                     52 -> {
                         val dec = handshakeHelper.decrypt(payload)
@@ -107,16 +110,24 @@ class INSTANTWS(
                         val resp = Json.decodeFromString<SyncMessage>(dec.decodeToString())
                         _incomingMessages.postValue(INSTANTWSMessage.SendMessage(resp))
                     }
+                    88 -> {
+                        val dec = handshakeHelper.decrypt(payload)
+                        val resp = Json.decodeFromString<WhoAmIResponse>(dec.decodeToString())
+                        _incomingMessages.postValue(INSTANTWSMessage.WhoAmI(resp))
+                    }
                     89 -> {
                         val dec = handshakeHelper.decrypt(payload)
-                        val resp = Json.decodeFromString<List<Alert>>(dec.decodeToString())
-                        _incomingMessages.postValue(INSTANTWSMessage.GetAlerts(resp))
+                        val resp = Json.decodeFromString<WhoAmIResponse>(dec.decodeToString())
+                        _incomingMessages.postValue(INSTANTWSMessage.WhoAmI(resp))
                     }
                     90 -> {
                         _incomingMessages.postValue(INSTANTWSMessage.ChangeIKey)
                     }
                     100 -> {
                         handshakeHelper.rotateKey(payload)
+                    }
+                    123 -> {
+                        _incomingMessages.postValue(INSTANTWSMessage.LoginDeniedError)
                     }
                     124 -> {
                         _incomingMessages.postValue(INSTANTWSMessage.AccessDeniedError)
@@ -215,6 +226,12 @@ class INSTANTWS(
             ByteString.of(
                 *byteArrayOf(17)+handshakeHelper.encrypt(req, SendMessageRequest.serializer())
             )
+        )
+    }
+
+    fun whoAmI() {
+        webSocket?.send(
+            ByteString.of(*byteArrayOf(48))
         )
     }
 

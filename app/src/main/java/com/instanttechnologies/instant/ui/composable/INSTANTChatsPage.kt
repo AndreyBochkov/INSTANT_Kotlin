@@ -88,6 +88,10 @@ fun INSTANTChatsPage(
                     )
                 }
             }
+            LayoutText(
+                stringResource(R.string.chats_hint),
+                color = MaterialTheme.colorScheme.outline
+            )
         }
     }
 }

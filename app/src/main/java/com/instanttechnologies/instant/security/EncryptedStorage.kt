@@ -8,22 +8,24 @@ import java.io.FileOutputStream
 class EncryptedStorage(context: Context) {
     private val keyStoreHelper = AESKeyStoreHelper("instant_encrypted_storage_key")
 
-    private val loginFile = File(context.filesDir, "encrypted_login")
     private val addressFile = File(context.filesDir, "encrypted_address")
     private val dateTimeFile = File(context.filesDir, "datetime")
     private val dateTimeDefaults = context.getString(R.string.dateDefault) to context.getString(R.string.timeDefault)
 
     private val chatsFile = File(context.filesDir, "encrypted_chats")
+    private val loginFile = File(context.filesDir, "encrypted_login")
     init {
         try {
             chatsFile.delete()
         } catch (_: Throwable) {
 //            Silently exit if cannot delete
         }
+        try {
+            loginFile.delete()
+        } catch (_: Throwable) {
+//            Silently exit if cannot delete
+        }
     }
-
-    fun saveLogin(login: String) = saveString(loginFile, login)
-    fun loadLogin(): String? = loadString(loginFile)
 
     fun saveAddress(address: String) = saveString(addressFile, address)
     fun loadAddress(): String? = loadString(addressFile)
@@ -37,6 +39,7 @@ class EncryptedStorage(context: Context) {
         }
     }
 
+    // работает - не трогаем
     fun loadDateTime(): Pair<String, String> {
         if (!dateTimeFile.exists()) return dateTimeDefaults
         return try {

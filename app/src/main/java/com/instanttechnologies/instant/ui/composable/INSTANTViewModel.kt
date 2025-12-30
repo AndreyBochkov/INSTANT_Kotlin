@@ -32,6 +32,7 @@ import kotlinx.coroutines.flow.update
 data class INSTANTUiState(
     val pageType: PageType = PageType.Register,
     val name: String = "",
+    val id: Int = 0,
     val errorText: String? = null,
     val chats: List<ChatProperties> = emptyList(),
     val users: List<User> = emptyList(),
@@ -65,26 +66,19 @@ class INSTANTViewModel(
                 is INSTANTWSMessage.Ready -> {
                     requestID = wsMessage.requestID
                     if (wsMessage.registered) {
-                        webSocket.getChats()
+                        webSocket.whoAmI()
                         _uiState.update {
                             it.copy(
                                 backgroundWork = 1,
-                                connected = true
+                                connected = false
                             )
                         }
                     } else {
-                        val login = encryptedStorage.loadLogin()
-                        if (login != null) {
-                            webSocket.register(
-                                RegisterRequest(login = login)
-                            )
-                        } else {
-                            _uiState.value = INSTANTUiState(
-                                pageType = PageType.Register,
-                                backgroundWork = 0,
-                                connected = true
-                            )
-                        }
+                        _uiState.value = INSTANTUiState(
+                            pageType = PageType.Register,
+                            backgroundWork = 0,
+                            connected = true
+                        )
                     }
                 }
                 is INSTANTWSMessage.Register -> {
@@ -92,7 +86,8 @@ class INSTANTViewModel(
                     _uiState.update {
                         it.copy(
                             pageType = PageType.Chats,
-                            name = encryptedStorage.loadLogin()?:"",
+                            name = wsMessage.resp.login,
+                            id = wsMessage.resp.id,
                             backgroundWork = it.backgroundWork!! - 1
                         )
                     }
@@ -211,6 +206,17 @@ class INSTANTViewModel(
                         )
                     }
                 }
+                is INSTANTWSMessage.WhoAmI -> {
+                    webSocket.getChats()
+                    _uiState.update {
+                        it.copy(
+                            pageType = PageType.Chats,
+                            name = wsMessage.resp.login,
+                            id = wsMessage.resp.id,
+                            connected = true
+                        )
+                    }
+                }
                 is INSTANTWSMessage.GetAlerts -> {
                     _uiState.update {
                         it.copy(
@@ -227,7 +233,15 @@ class INSTANTViewModel(
                         )
                     }
                 }
-                is INSTANTWSMessage.AccessDeniedError -> {
+                INSTANTWSMessage.LoginDeniedError -> {
+                    _uiState.update {
+                        it.copy(
+                            errorText = application.getString(R.string.login_denied_123),
+                            backgroundWork = it.backgroundWork!! - 1
+                        )
+                    }
+                }
+                INSTANTWSMessage.AccessDeniedError -> {
                     _uiState.update {
                         it.copy(
                             errorText = application.getString(R.string.access_denied_124),
@@ -235,7 +249,7 @@ class INSTANTViewModel(
                         )
                     }
                 }
-                is INSTANTWSMessage.DuplicatedLoginError -> {
+                INSTANTWSMessage.DuplicatedLoginError -> {
                     _uiState.update {
                         it.copy(
                             errorText = application.getString(R.string.duplicated_login_125),
@@ -243,7 +257,7 @@ class INSTANTViewModel(
                         )
                     }
                 }
-                is INSTANTWSMessage.EmptyCredentialsError -> {
+                INSTANTWSMessage.EmptyCredentialsError -> {
                     _uiState.update {
                         it.copy(
                             errorText = application.getString(R.string.empty_credentials_126),
@@ -269,7 +283,7 @@ class INSTANTViewModel(
                         )
                     }
                 }
-                is INSTANTWSMessage.NotReady -> {
+                INSTANTWSMessage.NotReady -> {
                     _uiState.update {
                         it.copy(
                             backgroundWork = 0,
@@ -309,7 +323,6 @@ class INSTANTViewModel(
     private fun initializeUIState() {
         _uiState.value = INSTANTUiState(
             pageType = PageType.Chats,
-            name = encryptedStorage.loadLogin()?:"",
             connected = false
 //            chats = encryptedStorage.loadChats()
         )
@@ -317,7 +330,6 @@ class INSTANTViewModel(
 
     fun register(login: String) {
         if (_uiState.value.connected) {
-            encryptedStorage.saveLogin(login)
             webSocket.register(
                 RegisterRequest(
                     login = login,

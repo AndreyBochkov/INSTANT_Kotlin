@@ -69,4 +69,6 @@
     <string name="datetime_american">Американский МДГ-ЧМС</string>
     <string name="invalid_version_hint">Ошибки, упоминающие \"неверную версию\" наверняка вызваны отсутствием обновлений. Установите их с официального сайта.</string>
     <string name="chats_hint">В INSTANT только группы, называемые \"чатами\". В чате есть администраторы, которые могут туда писать, и слушатели.</string>
+    <string name="login_denied_123">Недопустимые символы!</string>
+    <string name="login_hint">В логине разрешены только латинские буквы, цифры и нижнее подчёркивание.</string>
 </resources>

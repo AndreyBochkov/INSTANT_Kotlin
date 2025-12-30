@@ -140,8 +140,8 @@ fun INSTANTApp(
                                 onGetMessagesRequest = { offset ->
                                     viewModel.getMessages(offset)
                                 },
-                                chat = chatProperties.run { Chat(chatid, label, cansend) },
-                                admins = chatProperties.admins
+                                chat = chatProperties,
+                                me = uiState.id
                             )
                         }
 

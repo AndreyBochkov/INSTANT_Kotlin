@@ -148,11 +148,6 @@ fun INSTANTSettingsPage(
             )
             HorizontalDivider()
         }
-        item {
-            LayoutText(
-                stringResource(R.string.chats_hint)
-            )
-        }
     }
 }
 

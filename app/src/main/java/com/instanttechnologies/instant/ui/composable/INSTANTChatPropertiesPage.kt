@@ -26,7 +26,7 @@ import com.instanttechnologies.instant.utils.LayoutText
 fun INSTANTChatPropertiesPage(
     modifier: Modifier = Modifier,
     chatProperties: ChatProperties,
-    returnToChat: () -> Unit
+    returnToChat: () -> Unit,
 ) {
     BackHandler {
         returnToChat()
@@ -77,7 +77,11 @@ fun INSTANTChatPropertiesPage(
             )
             if (chatProperties.listeners.isEmpty()) {
                 HorizontalDivider()
-                LayoutText(stringResource(R.string.no_people_label))
+                if (chatProperties.cansend) {
+                    LayoutText(stringResource(R.string.no_people_label))
+                } else {
+                    LayoutText(stringResource(R.string.access_denied_124))
+                }
                 HorizontalDivider()
             }
         }
@@ -143,6 +147,6 @@ fun ChatPropertiesPreview() {
                 )
             )
         ),
-        returnToChat = {}
+        returnToChat = {},
     )
 }

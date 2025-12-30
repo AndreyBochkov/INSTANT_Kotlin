@@ -126,7 +126,11 @@ data class GetMessagesResponse( // 56
 
 //SendMessageResponse [55]SyncMessage
 
-//GotMessageAck [91]SyncMessage
+@Serializable
+data class WhoAmIResponse( // 88
+    val login: String,
+    val id: Int
+)
 
 //RotateKeys [92]
 
