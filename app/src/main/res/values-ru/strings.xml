@@ -11,7 +11,7 @@
     <string name="login_placeholder">Логин</string>
     <string name="greeting_message">Добро пожаловать! Создайте аккаунт, чтобы продолжить. Необходим только логин, потому что идентификация пользователей на сервере происходит при помощи криптографических ключей, записанных в памяти приложения. Не очищайте память приложения, иначе потеряете доступ к аккаунту. Любое дальнейшее использование приложения будет означать ваше согласие с Политикой конфиденциальности и Условиями использования, размещенными на сайте INSTANT.</string>
     <string name="link_to_privacy_page">Открыть Политику и Условия</string>
-    <string name="register_this_name">Зарегистрировать этот логин!</string>
+    <string name="register_this_name">Зарегистрировать\nэтот логин!</string>
     <string name="loading_response">Загрузка ответа сервера…</string>
     <string name="error_description">"Ошибка: "</string>
     <string name="new_chat_label">Новый чат</string>

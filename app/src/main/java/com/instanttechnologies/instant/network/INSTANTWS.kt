@@ -117,8 +117,8 @@ class INSTANTWS(
                     }
                     89 -> {
                         val dec = handshakeHelper.decrypt(payload)
-                        val resp = Json.decodeFromString<WhoAmIResponse>(dec.decodeToString())
-                        _incomingMessages.postValue(INSTANTWSMessage.WhoAmI(resp))
+                        val resp = Json.decodeFromString<List<Alert>>(dec.decodeToString())
+                        _incomingMessages.postValue(INSTANTWSMessage.GetAlerts(resp))
                     }
                     90 -> {
                         _incomingMessages.postValue(INSTANTWSMessage.ChangeIKey)

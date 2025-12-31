@@ -12,7 +12,7 @@
     <string name="login_placeholder">Login</string>
     <string name="greeting_message">Selamat datang! Buat akun untuk melanjutkan. Hanya diperlukan login, karena identifikasi pengguna di server dilakukan dengan menggunakan kunci kriptografi yang disimpan dalam memori aplikasi. Jangan hapus memori aplikasi, karena Anda akan kehilangan akses ke akun. Setiap penggunaan aplikasi selanjutnya berarti Anda menyetujui Kebijakan Privasi dan Ketentuan Penggunaan yang tercantum di situs web INSTANT.</string>
     <string name="link_to_privacy_page">Buka Kebijakan Privasi dan Ketentuan Penggunaan</string>
-    <string name="register_this_name">Daftarkan login ini!</string>
+    <string name="register_this_name">Daftarkan\nlogin ini!</string>
     <string name="loading_response">Memuat respons server…</string>
     <string name="new_chat_label">Obrolan baru</string>
     <string name="search_label">Pencarian</string>
