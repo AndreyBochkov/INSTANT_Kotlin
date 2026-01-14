@@ -1,7 +1,10 @@
 package com.instanttechnologies.instant.network
 
+import com.instanttechnologies.instant.data.AddTieResponse
 import com.instanttechnologies.instant.data.Alert
 import com.instanttechnologies.instant.data.Chat
+import com.instanttechnologies.instant.data.DeleteChatData
+import com.instanttechnologies.instant.data.DeleteTieData
 import com.instanttechnologies.instant.data.GetMessagesResponse
 import com.instanttechnologies.instant.data.GetPropertiesResponse
 import com.instanttechnologies.instant.data.SyncMessage
@@ -18,6 +21,9 @@ sealed class INSTANTWSMessage {
     data class NewChat(val resp: Chat) : INSTANTWSMessage()
     data class GetMessages(val resp: GetMessagesResponse) : INSTANTWSMessage()
     data class SendMessage(val resp: SyncMessage) : INSTANTWSMessage()
+    data class AddTie(val resp: AddTieResponse) : INSTANTWSMessage()
+    data class DeleteTie(val resp: DeleteTieData) : INSTANTWSMessage()
+    data class DeleteChat(val resp: DeleteChatData) : INSTANTWSMessage()
 
     data class WhoAmI(val resp: WhoAmIResponse) : INSTANTWSMessage()
     data class GetAlerts(val resp: List<Alert>) : INSTANTWSMessage()
@@ -26,7 +32,6 @@ sealed class INSTANTWSMessage {
     data class FatalError(val message: String) : INSTANTWSMessage()
     data object EmptyCredentialsError : INSTANTWSMessage()
     data object DuplicatedLoginError : INSTANTWSMessage()
-    data object AccessDeniedError : INSTANTWSMessage()
     data object LoginDeniedError : INSTANTWSMessage()
 
     data class UnspecifiedTypeError(val type: Int) : INSTANTWSMessage()

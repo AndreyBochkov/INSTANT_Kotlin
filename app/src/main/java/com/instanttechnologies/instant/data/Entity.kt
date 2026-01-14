@@ -49,6 +49,13 @@ data class SyncMessage(
 )
 
 @Serializable
+data class Tie( // 18
+    val userid: Int,
+    val chatid: Int,
+    val cansend: Boolean
+)
+
+@Serializable
 data class RegisterRequest( // 11
     val login: String
 )
@@ -85,6 +92,17 @@ data class SendMessageRequest( // 17
 )
 
 @Serializable
+data class DeleteTieData( // 19. 59
+    val userid: Int,
+    val chatid: Int
+)
+
+@Serializable
+data class DeleteChatData( // 20, 60
+    val chatid: Int
+)
+
+@Serializable
 data class ChangeIKeyRequest( // 50
     @Serializable(with = ByteArrayAsUnsignedListSerializer::class)
     val new: ByteArray
@@ -103,7 +121,7 @@ data class ChangeIKeyRequest( // 50
     }
 }
 
-//RegisterResponse [51]
+//RegisterResponse [51]WhoAmI
 
 //GetChatsResponse [52]List<Chat>
 
@@ -124,7 +142,15 @@ data class GetMessagesResponse( // 56
     val messages: List<Message>
 )
 
-//SendMessageResponse [55]SyncMessage
+//SendMessageResponse [57]SyncMessage
+
+@Serializable
+data class AddTieResponse( // 58
+    val userid: Int,
+    val chatid: Int,
+    val cansend: Boolean,
+    val login: String
+)
 
 @Serializable
 data class WhoAmIResponse( // 88

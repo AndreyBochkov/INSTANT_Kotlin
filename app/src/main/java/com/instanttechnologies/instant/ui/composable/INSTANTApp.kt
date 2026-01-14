@@ -73,6 +73,10 @@ fun INSTANTApp(
                 onReturnToChat = {
                     viewModel.returnToChat()
                 },
+                onDeleteChat = {
+                    viewModel.deleteChat(uiState.currentChat!!)
+                    viewModel.returnToChats()
+                },
 
                 easterEgg = { easterEggVal = (easterEggVal + 1) % 10 },
                 easterEggParameter = easterEggVal >= 5,
@@ -148,8 +152,6 @@ fun INSTANTApp(
                         PageType.Search -> INSTANTSearchPage(
                             modifier = pageModifier,
                             users = uiState.users,
-                            initialAdmins = emptyList(),
-                            initialListeners = emptyList(),
                             onNewChatRequest = { admins, listeners, label ->
                                 viewModel.newChat(admins, listeners, label)
                             },
@@ -208,7 +210,20 @@ fun INSTANTApp(
                                 chatProperties = uiState.chats.first { it.chatid == uiState.currentChat },
                                 returnToChat = {
                                     viewModel.returnToChat()
-                                }
+                                },
+                                onSearchRequest = {
+                                    viewModel.search(it)
+                                },
+                                isConnected = uiState.connected,
+                                onAddTieRequest = { userid, chatid, cansend ->
+                                    viewModel.addTie(userid, chatid, cansend)
+                                },
+                                ondDeleteTieRequest = { userid, chatid ->
+                                    viewModel.deleteTie(userid, chatid)
+                                },
+                                users = uiState.users,
+                                isLoading = uiState.backgroundWork!! > 0,
+                                me = uiState.id
                             )
                         }
                     }

@@ -1,6 +1,8 @@
 package com.instanttechnologies.instant.ui.composable
 
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material3.CenterAlignedTopAppBar
@@ -19,6 +21,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.tooling.preview.Preview
@@ -39,6 +42,7 @@ fun INSTANTTopAppBar(
     onReturnToChats: () -> Unit,
     onReturnToChat: () -> Unit,
     onGoToProperties: () -> Unit,
+    onDeleteChat: () -> Unit,
     easterEgg: () -> Unit,
     easterEggParameter: Boolean,
     easterEggVal: Int,
@@ -188,6 +192,19 @@ fun INSTANTTopAppBar(
                                     onReturnToChat()
                                 }
                             )
+                            Spacer(modifier = Modifier.padding(top = dimensionResource(R.dimen.padding)/2))
+                            DropdownMenuItem(
+                                text = {
+                                    LayoutText(
+                                        stringResource(R.string.delete_chat_label),
+                                        color = MaterialTheme.colorScheme.error
+                                    )
+                                },
+                                onClick = {
+                                    actionsExpanded = false
+                                    onDeleteChat()
+                                }
+                            )
                         }
                         else -> {
                             DropdownMenuItem(
@@ -234,6 +251,7 @@ fun TopBarPreview() {
         easterEgg = {},
         onReturnToChat = {},
         onGoToProperties = {},
+        onDeleteChat = {},
         easterEggParameter = false,
         easterEggVal = 0,
         pageType = PageType.Chats

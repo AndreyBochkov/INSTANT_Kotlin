@@ -6,11 +6,13 @@ import android.content.ClipboardManager
 import android.content.Context
 import android.util.Log
 import androidx.lifecycle.AndroidViewModel
-import androidx.lifecycle.Observer
 import androidx.lifecycle.application
+import androidx.lifecycle.viewModelScope
 import com.instanttechnologies.instant.R
 import com.instanttechnologies.instant.data.Alert
 import com.instanttechnologies.instant.data.ChatProperties
+import com.instanttechnologies.instant.data.DeleteChatData
+import com.instanttechnologies.instant.data.DeleteTieData
 import com.instanttechnologies.instant.data.GetMessagesRequest
 import com.instanttechnologies.instant.data.GetPropertiesRequest
 import com.instanttechnologies.instant.data.Message
@@ -19,6 +21,7 @@ import com.instanttechnologies.instant.data.PageType
 import com.instanttechnologies.instant.data.RegisterRequest
 import com.instanttechnologies.instant.data.SearchRequest
 import com.instanttechnologies.instant.data.SendMessageRequest
+import com.instanttechnologies.instant.data.Tie
 import com.instanttechnologies.instant.data.User
 import com.instanttechnologies.instant.network.INSTANTWS
 import com.instanttechnologies.instant.network.INSTANTWSMessage
@@ -28,6 +31,7 @@ import com.instanttechnologies.instant.utils.showToast
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
 
 data class INSTANTUiState(
     val pageType: PageType = PageType.Register,
@@ -50,7 +54,6 @@ class INSTANTViewModel(
 
     private val encryptedStorage = EncryptedStorage(application)
     private lateinit var webSocket: INSTANTWS
-    private lateinit var observer: Observer<INSTANTWSMessage>
     private val _uiState = MutableStateFlow(INSTANTUiState())
     private var requestID = ""
 
@@ -58,44 +61,57 @@ class INSTANTViewModel(
 
     fun goForeground() {
         webSocket = INSTANTWS(encryptedStorage.loadAddress()?:application.getString(R.string.address))
-        observer = Observer { wsMessage ->
-            if (_uiState.value.backgroundWork == null) {
-                return@Observer
-            }
-            when (wsMessage) {
-                is INSTANTWSMessage.Ready -> {
-                    requestID = wsMessage.requestID
-                    if (wsMessage.registered) {
-                        webSocket.whoAmI()
-                        _uiState.update {
-                            it.copy(
-                                backgroundWork = 1,
-                                connected = false
+
+        viewModelScope.launch {
+            webSocket.incomingMessages.collect { wsMessage ->
+                if (_uiState.value.backgroundWork == null) return@collect
+
+                Log.d(TAG, "VM is proceeding ${wsMessage.javaClass.name}")
+
+                when (wsMessage) {
+                    is INSTANTWSMessage.Ready -> {
+                        requestID = wsMessage.requestID
+                        if (wsMessage.registered) {
+                            webSocket.whoAmI()
+                            webSocket.getChats()
+                            if (_uiState.value.currentChat != null) {
+                                webSocket.getProperties(GetPropertiesRequest(
+                                    chatid = _uiState.value.currentChat!!
+                                ))
+                                webSocket.getMessages(GetMessagesRequest(
+                                    chatid = _uiState.value.currentChat!!,
+                                    offset = 0
+                                ))
+                            }
+                            _uiState.update {
+                                it.copy(
+                                    backgroundWork = if (_uiState.value.currentChat != null) 4 else 2,
+                                    connected = false
+                                )
+                            }
+                        } else {
+                            _uiState.value = INSTANTUiState(
+                                pageType = PageType.Register,
+                                backgroundWork = 0,
+                                connected = true
                             )
                         }
-                    } else {
-                        _uiState.value = INSTANTUiState(
-                            pageType = PageType.Register,
-                            backgroundWork = 0,
-                            connected = true
-                        )
                     }
-                }
-                is INSTANTWSMessage.Register -> {
-                    application.showToast(application.getString(R.string.register_success))
-                    _uiState.update {
-                        it.copy(
-                            pageType = PageType.Chats,
-                            name = wsMessage.resp.login,
-                            id = wsMessage.resp.id,
-                            backgroundWork = it.backgroundWork!! - 1
-                        )
+                    is INSTANTWSMessage.Register -> {
+                        application.showToast(application.getString(R.string.register_success))
+                        _uiState.update {
+                            it.copy(
+                                pageType = PageType.Chats,
+                                name = wsMessage.resp.login,
+                                id = wsMessage.resp.id,
+                                backgroundWork = it.backgroundWork!! - 1
+                            )
+                        }
                     }
-                }
-                is INSTANTWSMessage.GetChats -> {
-                    _uiState.update {
-                        it.copy(
-                            chats = it.chats.plus(wsMessage.resp.map { ch ->
+                    is INSTANTWSMessage.GetChats -> {
+                        _uiState.update {
+                            it.copy(
+                                chats = it.chats.plus(wsMessage.resp.map { ch ->
                                     ChatProperties(
                                         ch.chatid,
                                         ch.label,
@@ -106,8 +122,8 @@ class INSTANTViewModel(
                                 }
                             )
                             .groupBy { chPr -> chPr.chatid }
-                            .map { (_, messages) ->
-                                messages.first()
+                            .map { (_, chats) ->
+                                chats.first().copy(cansend = chats.last().cansend)
                             },
                             messages = it.messages.apply {
                                 wsMessage.resp.forEach { chat ->
@@ -116,196 +132,243 @@ class INSTANTViewModel(
                                     }
                                 }
                             },
-                            backgroundWork = it.backgroundWork!! - 1
+                            backgroundWork = it.backgroundWork!! - 1,
+                            connected = it.backgroundWork == 1
                         )
                     }
 //                        encryptedStorage.saveChats(wsMessage.resp)
-                }
-                is INSTANTWSMessage.Search -> {
-                    _uiState.update {
-                        it.copy(
-                            users = wsMessage.resp,
-                            backgroundWork = it.backgroundWork!! - 1
-                        )
                     }
-                }
-                is INSTANTWSMessage.GetProperties -> {
-                    webSocket.getMessages(GetMessagesRequest(
-                        chatid = wsMessage.resp.chatid,
-                        offset = 0
-                    ))
-                    _uiState.update {
-                        it.copy(
-                            chats = it.chats.map { chat ->
-                                if (chat.chatid == wsMessage.resp.chatid) {
-                                    chat.copy(
-                                        admins = wsMessage.resp.admins,
-                                        listeners = wsMessage.resp.listeners
-                                    )
-                                } else {
-                                    chat
-                                }
-                            }
-                        )
-                    }
-                }
-                is INSTANTWSMessage.NewChat -> {
-                    if (!_uiState.value.messages.containsKey(wsMessage.resp.chatid)) {
-                        application.showToast(application.getString(R.string.new_chat_label) + ": " + wsMessage.resp.label)
+                    is INSTANTWSMessage.Search -> {
                         _uiState.update {
                             it.copy(
-                                chats = it.chats.toMutableList()
-                                    .plus(
-                                        ChatProperties(
-                                            chatid = wsMessage.resp.chatid,
-                                            label = wsMessage.resp.label,
-                                            cansend = wsMessage.resp.cansend,
-                                            admins = emptyList(),
-                                            listeners = emptyList()
-                                        )
-                                    ),
-                                messages = it.messages.plus(wsMessage.resp.chatid to emptyList())
+                                users = wsMessage.resp,
+                                backgroundWork = it.backgroundWork!! - 1
                             )
                         }
-//                            encryptedStorage.saveChats(_uiState.value.chats)
-                    } else {
-                        Log.d(TAG, "Unusual behaviour: newChat overwrites existing one.")
                     }
-                }
-                is INSTANTWSMessage.GetMessages -> {
-                    _uiState.update { oldState ->
-                        oldState.copy(
-                            messages = oldState.messages.plus(
-                                wsMessage.resp.chatid to (
-                                        (oldState.messages[wsMessage.resp.chatid] ?: emptyList())
-                                                + wsMessage.resp.messages
+                    is INSTANTWSMessage.GetProperties -> {
+                        _uiState.update {
+                            it.copy(
+                                chats = it.chats.map { chat ->
+                                    if (chat.chatid == wsMessage.resp.chatid) {
+                                        chat.copy(
+                                            admins = wsMessage.resp.admins,
+                                            listeners = wsMessage.resp.listeners
                                         )
-                                    .groupBy { it.messageid }
-                                    .map { (_, messages) -> messages.last() }
-                                    .sortedBy { it.ts }
-                            ),
-                            backgroundWork = oldState.backgroundWork!! - 1
-                        )
+                                    } else {
+                                        chat
+                                    }
+                                },
+                                backgroundWork = it.backgroundWork!! - 1,
+                                connected = it.connected || it.backgroundWork == 1
+                            )
+                        }
                     }
-                }
-                is INSTANTWSMessage.SendMessage -> {
-                    _uiState.update {
-                        it.copy(
-                            messages = it.messages.plus(
-                                wsMessage.resp.chatid to
-                                        it.messages[wsMessage.resp.chatid]!!
-                                            .plus(
-                                                Message(
-                                                    messageid = wsMessage.resp.messageid,
-                                                    ts = wsMessage.resp.ts,
-                                                    body = wsMessage.resp.body,
-                                                    sender = wsMessage.resp.sender
+                    is INSTANTWSMessage.NewChat -> {
+                        if (!_uiState.value.messages.containsKey(wsMessage.resp.chatid)) {
+                            application.showToast(application.getString(R.string.new_chat_label) + ": " + wsMessage.resp.label)
+                            _uiState.update {
+                                it.copy(
+                                    chats = it.chats.toMutableList()
+                                        .plus(
+                                            ChatProperties(
+                                                chatid = wsMessage.resp.chatid,
+                                                label = wsMessage.resp.label,
+                                                cansend = wsMessage.resp.cansend,
+                                                admins = emptyList(),
+                                                listeners = emptyList()
+                                            )
+                                        ),
+                                    messages = it.messages.plus(wsMessage.resp.chatid to emptyList())
+                                )
+                            }
+//                            encryptedStorage.saveChats(_uiState.value.chats)
+                        } else {
+                            Log.d(TAG, "Unusual behaviour: newChat overwrites existing one.")
+                        }
+                    }
+                    is INSTANTWSMessage.GetMessages -> {
+                        _uiState.update { oldState ->
+                            oldState.copy(
+                                messages = oldState.messages.plus(
+                                    wsMessage.resp.chatid to (
+                                            (oldState.messages[wsMessage.resp.chatid] ?: emptyList())
+                                                    + wsMessage.resp.messages
+                                            )
+                                        .groupBy { it.messageid }
+                                        .map { (_, messages) -> messages.last() }
+                                        .sortedBy { it.ts }
+                                ),
+                                backgroundWork = oldState.backgroundWork!! - 1,
+                                connected = oldState.connected || oldState.backgroundWork == 1
+                            )
+                        }
+                    }
+                    is INSTANTWSMessage.SendMessage -> {
+                        _uiState.update {
+                            it.copy(
+                                messages = it.messages.plus(
+                                    wsMessage.resp.chatid to
+                                            it.messages[wsMessage.resp.chatid]!!
+                                                .plus(
+                                                    Message(
+                                                        messageid = wsMessage.resp.messageid,
+                                                        ts = wsMessage.resp.ts,
+                                                        body = wsMessage.resp.body,
+                                                        sender = wsMessage.resp.sender
+                                                    )
+                                                )
+                                )
+                            )
+                        }
+                    }
+                    is INSTANTWSMessage.AddTie -> {
+                        _uiState.update {
+                            it.copy(
+                                chats = it.chats.map { chat ->
+                                    if (chat.chatid == wsMessage.resp.chatid) {
+                                        if (wsMessage.resp.cansend) {
+                                            chat.copy(
+                                                admins = chat.admins.plus(
+                                                    User(
+                                                        userid = wsMessage.resp.userid,
+                                                        login = wsMessage.resp.login
+                                                    )
                                                 )
                                             )
+                                        } else {
+                                            chat.copy(
+                                                listeners = chat.listeners.plus(
+                                                    User(
+                                                        userid = wsMessage.resp.userid,
+                                                        login = wsMessage.resp.login
+                                                    )
+                                                )
+                                            )
+                                        }
+                                    } else {
+                                        chat
+                                    }
+                                }
                             )
-                        )
+                        }
                     }
-                }
-                is INSTANTWSMessage.WhoAmI -> {
-                    webSocket.getChats()
-                    _uiState.update {
-                        it.copy(
-                            pageType = PageType.Chats,
-                            name = wsMessage.resp.login,
-                            id = wsMessage.resp.id,
-                            connected = true
-                        )
+                    is INSTANTWSMessage.DeleteTie -> {
+                        _uiState.update {
+                            it.copy(
+                                chats = it.chats.map { chat ->
+                                    if (chat.chatid == wsMessage.resp.chatid) {
+                                        chat.copy(
+                                            admins = chat.admins.filterNot { user -> user.userid == wsMessage.resp.userid },
+                                            listeners = chat.listeners.filterNot { user -> user.userid == wsMessage.resp.userid }
+                                        )
+                                    } else {
+                                        chat
+                                    }
+                                }
+                            )
+                        }
                     }
-                }
-                is INSTANTWSMessage.GetAlerts -> {
-                    _uiState.update {
-                        it.copy(
-                            alerts = wsMessage.resp,
-                            backgroundWork = it.backgroundWork!! - 1
-                        )
+                    is INSTANTWSMessage.DeleteChat -> {
+                        _uiState.update {
+                            it.copy(
+                                chats = it.chats.filterNot { chat -> chat.chatid == wsMessage.resp.chatid },
+                                messages = it.messages.filterNot { (chatid, _) -> chatid == wsMessage.resp.chatid },
+                                pageType = if (wsMessage.resp.chatid == it.currentChat) PageType.Chats else it.pageType,
+                                currentChat = if (wsMessage.resp.chatid == it.currentChat) null else it.currentChat,
+                                backgroundWork = if (wsMessage.resp.chatid == it.currentChat) 0 else it.backgroundWork
+                            )
+                        }
                     }
-                }
-                is INSTANTWSMessage.ChangeIKey -> {
-                    application.showToast(application.getString(R.string.change_ikey_success))
-                    _uiState.update {
-                        it.copy(
-                            backgroundWork = it.backgroundWork!! - 1
-                        )
+                    is INSTANTWSMessage.WhoAmI -> {
+                        _uiState.update {
+                            it.copy(
+                                name = wsMessage.resp.login,
+                                id = wsMessage.resp.id,
+                                backgroundWork = it.backgroundWork!! - 1,
+                                connected = it.backgroundWork == 1
+                            )
+                        }
                     }
-                }
-                INSTANTWSMessage.LoginDeniedError -> {
-                    _uiState.update {
-                        it.copy(
-                            errorText = application.getString(R.string.login_denied_123),
-                            backgroundWork = it.backgroundWork!! - 1
-                        )
+                    is INSTANTWSMessage.GetAlerts -> {
+                        _uiState.update {
+                            it.copy(
+                                alerts = wsMessage.resp,
+                                backgroundWork = it.backgroundWork!! - 1
+                            )
+                        }
                     }
-                }
-                INSTANTWSMessage.AccessDeniedError -> {
-                    _uiState.update {
-                        it.copy(
-                            errorText = application.getString(R.string.access_denied_124),
-                            backgroundWork = it.backgroundWork!! - 1
-                        )
+                    is INSTANTWSMessage.ChangeIKey -> {
+                        application.showToast(application.getString(R.string.change_ikey_success))
+                        _uiState.update {
+                            it.copy(
+                                backgroundWork = it.backgroundWork!! - 1
+                            )
+                        }
                     }
-                }
-                INSTANTWSMessage.DuplicatedLoginError -> {
-                    _uiState.update {
-                        it.copy(
-                            errorText = application.getString(R.string.duplicated_login_125),
-                            backgroundWork = it.backgroundWork!! - 1
-                        )
+                    INSTANTWSMessage.LoginDeniedError -> {
+                        _uiState.update {
+                            it.copy(
+                                errorText = application.getString(R.string.login_denied_123),
+                                backgroundWork = it.backgroundWork!! - 1
+                            )
+                        }
                     }
-                }
-                INSTANTWSMessage.EmptyCredentialsError -> {
-                    _uiState.update {
-                        it.copy(
-                            errorText = application.getString(R.string.empty_credentials_126),
-                            backgroundWork = it.backgroundWork!! - 1
-                        )
+                    INSTANTWSMessage.DuplicatedLoginError -> {
+                        _uiState.update {
+                            it.copy(
+                                errorText = application.getString(R.string.duplicated_login_125),
+                                backgroundWork = it.backgroundWork!! - 1
+                            )
+                        }
                     }
-                }
-                is INSTANTWSMessage.FatalError -> {
-                    _uiState.update {
-                        it.copy(
-                            pageType = PageType.Error,
-                            errorText = wsMessage.message,
-                            backgroundWork = null
-                        )
+                    INSTANTWSMessage.EmptyCredentialsError -> {
+                        _uiState.update {
+                            it.copy(
+                                errorText = application.getString(R.string.empty_credentials_126),
+                                backgroundWork = it.backgroundWork!! - 1
+                            )
+                        }
                     }
-                }
-                is INSTANTWSMessage.UnspecifiedTypeError -> {
-                    _uiState.update {
-                        it.copy(
-                            pageType = PageType.Error,
-                            errorText = application.getString(R.string.unspecified_type_error) + wsMessage.type,
-                            backgroundWork = null
-                        )
+                    is INSTANTWSMessage.FatalError -> {
+                        _uiState.update {
+                            it.copy(
+                                pageType = PageType.Error,
+                                errorText = wsMessage.message,
+                                backgroundWork = null
+                            )
+                        }
                     }
-                }
-                INSTANTWSMessage.NotReady -> {
-                    _uiState.update {
-                        it.copy(
-                            backgroundWork = 0,
-                            connected = false
-                        )
+                    is INSTANTWSMessage.UnspecifiedTypeError -> {
+                        _uiState.update {
+                            it.copy(
+                                pageType = PageType.Error,
+                                errorText = application.getString(R.string.unspecified_type_error) + wsMessage.type,
+                                backgroundWork = null
+                            )
+                        }
+                    }
+                    INSTANTWSMessage.NotReady -> {
+                        _uiState.update {
+                            it.copy(
+                                backgroundWork = 0,
+                                connected = false
+                            )
+                        }
                     }
                 }
             }
         }
-        webSocket.incomingMessages.observeForever(observer)
     }
 
     fun resetAddress(newAddress: String) {
         encryptedStorage.saveAddress(newAddress)
-        webSocket.incomingMessages.removeObserver(observer)
         webSocket.disconnect()
         initializeUIState()
         goForeground()
     }
 
     fun goBackground() {
-        webSocket.incomingMessages.removeObserver(observer)
         webSocket.disconnect()
         _uiState.update {
             it.copy(
@@ -394,7 +457,7 @@ class INSTANTViewModel(
         }
     }
 
-    fun sendMessage(body: String) =
+    fun sendMessage(body: String) {
         if (_uiState.value.connected) {
             webSocket.sendMessage(
                 SendMessageRequest(
@@ -402,7 +465,41 @@ class INSTANTViewModel(
                     body = body
                 )
             )
-        } else {}
+        }
+    }
+
+    fun addTie(userid: Int, chatid: Int, cansend: Boolean) {
+        if (_uiState.value.connected) {
+            webSocket.addTie(
+                Tie(
+                    userid = userid,
+                    chatid = chatid,
+                    cansend = cansend
+                )
+            )
+        }
+    }
+
+    fun deleteTie(userid: Int, chatid: Int) {
+        if (_uiState.value.connected) {
+            webSocket.deleteTie(
+                DeleteTieData(
+                    userid = userid,
+                    chatid = chatid
+                )
+            )
+        }
+    }
+
+    fun deleteChat(chatid: Int) {
+        if (_uiState.value.connected) {
+            webSocket.deleteChat(
+                DeleteChatData(
+                    chatid = chatid
+                )
+            )
+        }
+    }
 
     fun changeIKey() {
         if (_uiState.value.connected) {
@@ -429,16 +526,18 @@ class INSTANTViewModel(
 
     fun openChat(chatid: Int) {
         if (_uiState.value.connected) {
-            webSocket.getProperties(
-                GetPropertiesRequest(
-                    chatid = chatid
-                )
-            )
+            webSocket.getProperties(GetPropertiesRequest(
+                chatid = chatid
+            ))
+            webSocket.getMessages(GetMessagesRequest(
+                chatid = chatid,
+                offset = 0
+            ))
             _uiState.update {
                 it.copy(
                     pageType = PageType.Chat,
                     currentChat = chatid,
-                    backgroundWork = it.backgroundWork!! + 1
+                    backgroundWork = it.backgroundWork!! + 2
                 )
             }
         }
@@ -495,5 +594,10 @@ class INSTANTViewModel(
                 currentChat = null
             )
         }
+    }
+
+    override fun onCleared() {
+        super.onCleared()
+        webSocket.disconnect()
     }
 }

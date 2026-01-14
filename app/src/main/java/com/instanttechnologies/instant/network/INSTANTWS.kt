@@ -1,11 +1,12 @@
 package com.instanttechnologies.instant.network
 
 import android.util.Log
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
+import com.instanttechnologies.instant.data.AddTieResponse
 import com.instanttechnologies.instant.data.Alert
 import com.instanttechnologies.instant.data.ChangeIKeyRequest
 import com.instanttechnologies.instant.data.Chat
+import com.instanttechnologies.instant.data.DeleteChatData
+import com.instanttechnologies.instant.data.DeleteTieData
 import com.instanttechnologies.instant.data.GetMessagesRequest
 import com.instanttechnologies.instant.data.GetMessagesResponse
 import com.instanttechnologies.instant.data.GetPropertiesRequest
@@ -15,12 +16,15 @@ import com.instanttechnologies.instant.data.RegisterRequest
 import com.instanttechnologies.instant.data.SearchRequest
 import com.instanttechnologies.instant.data.SendMessageRequest
 import com.instanttechnologies.instant.data.SyncMessage
+import com.instanttechnologies.instant.data.Tie
 import com.instanttechnologies.instant.data.User
 import com.instanttechnologies.instant.data.WhoAmIResponse
 import com.instanttechnologies.instant.security.HandshakeHelper
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.launch
 import kotlinx.serialization.json.Json
 import okhttp3.OkHttpClient
@@ -39,8 +43,13 @@ class INSTANTWS(
     private var webSocket: WebSocket? = null
     private lateinit var handshakeHelper: HandshakeHelper
 
-    private val _incomingMessages = MutableLiveData<INSTANTWSMessage>()
-    val incomingMessages: LiveData<INSTANTWSMessage> = _incomingMessages
+    private val serializer = Json { ignoreUnknownKeys = true }
+
+    private val _incomingMessages = MutableSharedFlow<INSTANTWSMessage>(
+        replay = 1,
+        extraBufferCapacity = 100
+    )
+    val incomingMessages = _incomingMessages.asSharedFlow()
 
     init {
         connectWebSocket()
@@ -64,6 +73,16 @@ class INSTANTWS(
             }
 
             override fun onMessage(webSocket: WebSocket, bytes: ByteString) {
+                scope.launch {
+                    try {
+                        processMessage(webSocket, bytes)
+                    } catch (e: Exception) {
+                        Log.d(TAG, "Error proceeding message", e)
+                    }
+                }
+            }
+
+            private suspend fun processMessage(webSocket: WebSocket, bytes: ByteString) {
                 val msgType = bytes[0].toInt()
                 val payload = bytes.toByteArray().sliceArray(1..<bytes.size)
 
@@ -73,77 +92,89 @@ class INSTANTWS(
                     0, 1 -> {
                         handshakeHelper.finishHandshake(payload)
                         Log.d(TAG, "Handshake finished")
-                        _incomingMessages.postValue(INSTANTWSMessage.Ready(msgType == 1, handshakeHelper.requestID))
+                        _incomingMessages.emit(INSTANTWSMessage.Ready(msgType == 1, handshakeHelper.requestID))
                     }
                     51 -> {
                         val dec = handshakeHelper.decrypt(payload)
-                        val resp = Json.decodeFromString<WhoAmIResponse>(dec.decodeToString())
-                        _incomingMessages.postValue(INSTANTWSMessage.Register(resp))
+                        val resp = serializer.decodeFromString<WhoAmIResponse>(dec.decodeToString())
+                        _incomingMessages.emit(INSTANTWSMessage.Register(resp))
                     }
                     52 -> {
                         val dec = handshakeHelper.decrypt(payload)
-                        val resp = Json.decodeFromString<List<Chat>>(dec.decodeToString())
-                        _incomingMessages.postValue(INSTANTWSMessage.GetChats(resp))
+                        val resp = serializer.decodeFromString<List<Chat>>(dec.decodeToString())
+                        _incomingMessages.emit(INSTANTWSMessage.GetChats(resp))
                     }
                     53 -> {
                         val dec = handshakeHelper.decrypt(payload)
-                        val resp = Json.decodeFromString<List<User>>(dec.decodeToString())
-                        _incomingMessages.postValue(INSTANTWSMessage.Search(resp))
+                        val resp = serializer.decodeFromString<List<User>>(dec.decodeToString())
+                        _incomingMessages.emit(INSTANTWSMessage.Search(resp))
                     }
                     54 -> {
                         val dec = handshakeHelper.decrypt(payload)
-                        val resp = Json.decodeFromString<GetPropertiesResponse>(dec.decodeToString())
-                        _incomingMessages.postValue(INSTANTWSMessage.GetProperties(resp))
+                        val resp = serializer.decodeFromString<GetPropertiesResponse>(dec.decodeToString())
+                        _incomingMessages.emit(INSTANTWSMessage.GetProperties(resp))
                     }
                     55 -> {
                         val dec = handshakeHelper.decrypt(payload)
-                        val resp = Json.decodeFromString<Chat>(dec.decodeToString())
-                        _incomingMessages.postValue(INSTANTWSMessage.NewChat(resp))
+                        val resp = serializer.decodeFromString<Chat>(dec.decodeToString())
+                        _incomingMessages.emit(INSTANTWSMessage.NewChat(resp))
                     }
                     56 -> {
                         val dec = handshakeHelper.decrypt(payload)
-                        val resp = Json.decodeFromString<GetMessagesResponse>(dec.decodeToString())
-                        _incomingMessages.postValue(INSTANTWSMessage.GetMessages(resp))
+                        val resp = serializer.decodeFromString<GetMessagesResponse>(dec.decodeToString())
+                        _incomingMessages.emit(INSTANTWSMessage.GetMessages(resp))
                     }
                     57 -> {
                         val dec = handshakeHelper.decrypt(payload)
-                        val resp = Json.decodeFromString<SyncMessage>(dec.decodeToString())
-                        _incomingMessages.postValue(INSTANTWSMessage.SendMessage(resp))
+                        val resp = serializer.decodeFromString<SyncMessage>(dec.decodeToString())
+                        _incomingMessages.emit(INSTANTWSMessage.SendMessage(resp))
+                    }
+                    58 -> {
+                        val dec = handshakeHelper.decrypt(payload)
+                        val resp = serializer.decodeFromString<AddTieResponse>(dec.decodeToString())
+                        _incomingMessages.emit(INSTANTWSMessage.AddTie(resp))
+                    }
+                    59 -> {
+                        val dec = handshakeHelper.decrypt(payload)
+                        val resp = serializer.decodeFromString<DeleteTieData>(dec.decodeToString())
+                        _incomingMessages.emit(INSTANTWSMessage.DeleteTie(resp))
+                    }
+                    60 -> {
+                        val dec = handshakeHelper.decrypt(payload)
+                        val resp = serializer.decodeFromString<DeleteChatData>(dec.decodeToString())
+                        _incomingMessages.emit(INSTANTWSMessage.DeleteChat(resp))
                     }
                     88 -> {
                         val dec = handshakeHelper.decrypt(payload)
-                        val resp = Json.decodeFromString<WhoAmIResponse>(dec.decodeToString())
-                        _incomingMessages.postValue(INSTANTWSMessage.WhoAmI(resp))
+                        val resp = serializer.decodeFromString<WhoAmIResponse>(dec.decodeToString())
+                        _incomingMessages.emit(INSTANTWSMessage.WhoAmI(resp))
                     }
                     89 -> {
                         val dec = handshakeHelper.decrypt(payload)
-                        val resp = Json.decodeFromString<List<Alert>>(dec.decodeToString())
-                        _incomingMessages.postValue(INSTANTWSMessage.GetAlerts(resp))
+                        val resp = serializer.decodeFromString<List<Alert>>(dec.decodeToString())
+                        _incomingMessages.emit(INSTANTWSMessage.GetAlerts(resp))
                     }
                     90 -> {
-                        _incomingMessages.postValue(INSTANTWSMessage.ChangeIKey)
+                        _incomingMessages.emit(INSTANTWSMessage.ChangeIKey)
                     }
                     100 -> {
                         handshakeHelper.rotateKey(payload)
                     }
                     123 -> {
-                        _incomingMessages.postValue(INSTANTWSMessage.LoginDeniedError)
-                    }
-                    124 -> {
-                        _incomingMessages.postValue(INSTANTWSMessage.AccessDeniedError)
+                        _incomingMessages.emit(INSTANTWSMessage.LoginDeniedError)
                     }
                     125 -> {
-                        _incomingMessages.postValue(INSTANTWSMessage.DuplicatedLoginError)
+                        _incomingMessages.emit(INSTANTWSMessage.DuplicatedLoginError)
                     }
                     126 -> {
-                        _incomingMessages.postValue(INSTANTWSMessage.EmptyCredentialsError)
+                        _incomingMessages.emit(INSTANTWSMessage.EmptyCredentialsError)
                     }
                     127 -> {
-                        _incomingMessages.postValue(INSTANTWSMessage.FatalError(payload.decodeToString()))
+                        _incomingMessages.emit(INSTANTWSMessage.FatalError(payload.decodeToString()))
                     }
                     else -> {
                         Log.d(TAG, "Else branch reached: " + bytes[0])
-                        _incomingMessages.postValue(INSTANTWSMessage.UnspecifiedTypeError(msgType))
+                        _incomingMessages.emit(INSTANTWSMessage.UnspecifiedTypeError(msgType))
                         webSocket.close(1000, "Error occurred")
                     }
                 }
@@ -152,8 +183,8 @@ class INSTANTWS(
             override fun onClosed(webSocket: WebSocket, code: Int, reason: String) {
                 Log.d(TAG, "Connection closed. $code - \"$reason\"")
                 if (code != 1000) {
-                    _incomingMessages.postValue(INSTANTWSMessage.NotReady)
                     scope.launch {
+                        _incomingMessages.emit(INSTANTWSMessage.NotReady)
                         delay(2000L)
                         connectWebSocket()
                     }
@@ -162,8 +193,8 @@ class INSTANTWS(
 
             override fun onFailure(webSocket: WebSocket, t: Throwable, response: Response?) {
                 Log.d(TAG, "Failure. ${t.message}")
-                _incomingMessages.postValue(INSTANTWSMessage.NotReady)
                 scope.launch {
+                    _incomingMessages.emit(INSTANTWSMessage.NotReady)
                     delay(2000L)
                     connectWebSocket()
                 }
@@ -225,6 +256,38 @@ class INSTANTWS(
         webSocket?.send(
             ByteString.of(
                 *byteArrayOf(17)+handshakeHelper.encrypt(req, SendMessageRequest.serializer())
+            )
+        )
+    }
+
+    fun addTie(req: Tie) {
+        webSocket?.send(
+            ByteString.of(
+                *byteArrayOf(18)+handshakeHelper.encrypt(req, Tie.serializer())
+            )
+        )
+    }
+
+    fun deleteTie(req: DeleteTieData) {
+        webSocket?.send(
+            ByteString.of(
+                *byteArrayOf(19)+handshakeHelper.encrypt(req, DeleteTieData.serializer())
+            )
+        )
+    }
+
+    fun deleteChat(req: DeleteChatData) {
+        webSocket?.send(
+            ByteString.of(
+                *byteArrayOf(20)+handshakeHelper.encrypt(req, DeleteChatData.serializer())
+            )
+        )
+    }
+
+    fun checkVersion(version: String) {
+        webSocket?.send(
+            ByteString.of(
+                *byteArrayOf(47)+version.toByteArray()
             )
         )
     }

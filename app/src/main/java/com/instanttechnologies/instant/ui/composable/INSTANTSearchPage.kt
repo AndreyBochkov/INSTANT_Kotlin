@@ -22,6 +22,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.tooling.preview.Devices
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -35,8 +36,6 @@ import com.instanttechnologies.instant.utils.LayoutText
 fun INSTANTSearchPage(
     modifier: Modifier = Modifier,
     users: List<User>,
-    initialAdmins: List<User>,
-    initialListeners: List<User>,
     onNewChatRequest: (List<Int>, List<Int>, String) -> Unit,
     onSearchRequest: (String) -> Unit,
     returnToChats: () -> Unit,
@@ -48,8 +47,8 @@ fun INSTANTSearchPage(
     }
     var query by rememberSaveable { mutableStateOf("") }
     var canSearch by rememberSaveable { mutableStateOf(false) }
-    var admins by rememberSaveable { mutableStateOf(initialAdmins) }
-    var listeners by rememberSaveable { mutableStateOf(initialListeners) }
+    var admins by rememberSaveable { mutableStateOf(emptyList<User>()) }
+    var listeners by rememberSaveable { mutableStateOf(emptyList<User>()) }
     var label by rememberSaveable { mutableStateOf("") }
     var choice by rememberSaveable { mutableIntStateOf(0) }
     INSTANTPageColumn(
@@ -60,19 +59,6 @@ fun INSTANTSearchPage(
             LayoutText(
                 stringResource(R.string.search_label),
                 style = MaterialTheme.typography.headlineSmall
-            )
-            INSTANTPrompt(
-                value = label,
-                placeholder = stringResource(R.string.label_placeholder),
-                onValueChange = {
-                    label = it
-                },
-                actionVisible = label.isNotBlank() && label.isNotEmpty() && isConnected,
-                actionLabel = stringResource(R.string.new_chat_label),
-                action = {
-                    onNewChatRequest(admins.map { it.userid }, listeners.map { it.userid }, label)
-                    returnToChats()
-                }
             )
             INSTANTPrompt(
                 modifier = Modifier
@@ -276,6 +262,27 @@ fun INSTANTSearchPage(
                 }
             }
         }
+        item {
+            Spacer(modifier = Modifier.padding(top = dimensionResource(R.dimen.padding)))
+            LayoutText(
+                stringResource(R.string.new_chat_label),
+                style = MaterialTheme.typography.headlineSmall
+            )
+            INSTANTPrompt(
+                value = label,
+                placeholder = stringResource(R.string.label_placeholder),
+                onValueChange = {
+                    label = it
+                },
+                actionVisible = label.isNotBlank() && label.isNotEmpty() && isConnected,
+                actionLabel = stringResource(R.string.new_chat_label),
+                action = {
+                    onNewChatRequest(admins.map { it.userid }, listeners.map { it.userid }, label)
+                    returnToChats()
+                },
+                capitalization = KeyboardCapitalization.Sentences
+            )
+        }
     }
 }
 
@@ -295,34 +302,6 @@ fun SearchPreview() {
             User(
                 userid = 3,
                 login = "dummy_0002"
-            )
-        ),
-        initialAdmins = listOf(
-            User(
-                userid = 4,
-                login = "dummy_0004"
-            ),
-            User(
-                userid = 5,
-                login = "dummy_0005"
-            ),
-            User(
-                userid = 6,
-                login = "dummy_0006"
-            )
-        ),
-        initialListeners = listOf(
-            User(
-                userid = 7,
-                login = "dummy_0007"
-            ),
-            User(
-                userid = 8,
-                login = "dummy_0008"
-            ),
-            User(
-                userid = 9,
-                login = "dummy_0009"
             )
         ),
         onNewChatRequest = {_, _, _ -> },

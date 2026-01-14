@@ -13,8 +13,8 @@ android {
         applicationId = "com.instanttechnologies.instant"
         minSdk = 24
         targetSdk = 36
-        versionCode = 1
-        versionName = "2.2-fix1"
+        versionCode = 2
+        versionName = "2.3"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }

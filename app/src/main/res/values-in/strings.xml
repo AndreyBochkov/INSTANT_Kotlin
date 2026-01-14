@@ -10,7 +10,7 @@
     <string name="empty_credentials_126">Login kosong</string>
     <string name="unspecified_type_error">"Jenis pemberitahuan yang tidak dikenal dari server: "</string>
     <string name="login_placeholder">Login</string>
-    <string name="greeting_message">Selamat datang! Buat akun untuk melanjutkan. Hanya diperlukan login, karena identifikasi pengguna di server dilakukan dengan menggunakan kunci kriptografi yang disimpan dalam memori aplikasi. Jangan hapus memori aplikasi, karena Anda akan kehilangan akses ke akun. Setiap penggunaan aplikasi selanjutnya berarti Anda menyetujui Kebijakan Privasi dan Ketentuan Penggunaan yang tercantum di situs web INSTANT.</string>
+    <string name="greeting_message">Selamat datang! Buat akun untuk melanjutkan. Akun hanya memerlukan login, server akan mengidentifikasi Anda menggunakan data internal yang tersimpan di folder aplikasi. Oleh karena itu, jangan hapus data aplikasi ini, jika tidak Anda akan kehilangan akun ini. Setiap penggunaan aplikasi ini berarti Anda telah membaca dan menyetujui Kebijakan Privasi dan Ketentuan Penggunaan INSTANT.</string>
     <string name="link_to_privacy_page">Buka Kebijakan Privasi dan Ketentuan Penggunaan</string>
     <string name="register_this_name">Daftarkan\nlogin ini!</string>
     <string name="loading_response">Memuat respons server…</string>
@@ -67,8 +67,11 @@
     <string name="new_address_action">Bergabunglah!</string>
     <string name="official_instance_label">Alamat server resmi</string>
     <string name="datetime_iso_8601">TBH-JMD (ISO 8601)</string>
-    <string name="invalid_version_hint">Kesalahan yang menyebutkan \"versi yang salah\" pasti disebabkan oleh tidak adanya pembaruan. Instal pembaruan tersebut dari situs web resmi.</string>
+    <string name="invalid_version_hint">Kesalahan yang menyebutkan \"Versi tidak valid\" atau \"Tipe respons tidak dikenal\" mungkin disebabkan oleh aplikasi yang sudah usang. Unduh versi baru melalui situs resmi!</string>
     <string name="chats_hint">Di INSTANT hanya ada grup yang disebut \"chat\". Di chat ada administrator yang dapat menulis di sana, dan pendengar.</string>
     <string name="login_denied_123">Karakter yang tidak diperbolehkan!</string>
     <string name="login_hint">Dalam nama pengguna, hanya huruf Latin, angka, dan garis bawah yang boleh digunakan.</string>
+    <string name="add_tie_label">Tambahkan pengguna baru</string>
+    <string name="delete_chat_label">Hapus obrolan</string>
+    <string name="delete_self_action">Tinggalkan obrolan</string>
 </resources>

@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonColors
 import androidx.compose.material3.MaterialTheme
@@ -29,6 +30,8 @@ import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.instanttechnologies.instant.R
@@ -114,7 +117,8 @@ fun INSTANTPrompt(
     onValueChange: (String) -> Unit,
     actionVisible: Boolean,
     actionLabel: String,
-    action: () -> Unit
+    action: () -> Unit,
+    capitalization: KeyboardCapitalization = KeyboardCapitalization.Unspecified
 ) {
     Row(
         modifier = modifier
@@ -134,7 +138,10 @@ fun INSTANTPrompt(
                     color = MaterialTheme.colorScheme.outline
                 )
             },
-            shape = messageLeftBoxShape
+            shape = messageLeftBoxShape,
+            keyboardOptions = KeyboardOptions(
+                capitalization = capitalization
+            )
         )
         AnimatedVisibility(
             visible = actionVisible,
