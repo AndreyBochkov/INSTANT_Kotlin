@@ -42,6 +42,7 @@ fun INSTANTTopAppBar(
     onReturnToChats: () -> Unit,
     onReturnToChat: () -> Unit,
     onGoToProperties: () -> Unit,
+    canDeleteChat: Boolean,
     onDeleteChat: () -> Unit,
     easterEgg: () -> Unit,
     easterEggParameter: Boolean,
@@ -192,19 +193,21 @@ fun INSTANTTopAppBar(
                                     onReturnToChat()
                                 }
                             )
-                            Spacer(modifier = Modifier.padding(top = dimensionResource(R.dimen.padding)/2))
-                            DropdownMenuItem(
-                                text = {
-                                    LayoutText(
-                                        stringResource(R.string.delete_chat_label),
-                                        color = MaterialTheme.colorScheme.error
-                                    )
-                                },
-                                onClick = {
-                                    actionsExpanded = false
-                                    onDeleteChat()
-                                }
-                            )
+                            if (canDeleteChat) {
+                                Spacer(modifier = Modifier.padding(top = dimensionResource(R.dimen.padding) / 2))
+                                DropdownMenuItem(
+                                    text = {
+                                        LayoutText(
+                                            stringResource(R.string.delete_chat_label),
+                                            color = MaterialTheme.colorScheme.error
+                                        )
+                                    },
+                                    onClick = {
+                                        actionsExpanded = false
+                                        onDeleteChat()
+                                    }
+                                )
+                            }
                         }
                         else -> {
                             DropdownMenuItem(
@@ -251,6 +254,7 @@ fun TopBarPreview() {
         easterEgg = {},
         onReturnToChat = {},
         onGoToProperties = {},
+        canDeleteChat = true,
         onDeleteChat = {},
         easterEggParameter = false,
         easterEggVal = 0,

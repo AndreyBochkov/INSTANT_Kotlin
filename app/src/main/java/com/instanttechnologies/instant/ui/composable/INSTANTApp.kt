@@ -73,6 +73,7 @@ fun INSTANTApp(
                 onReturnToChat = {
                     viewModel.returnToChat()
                 },
+                canDeleteChat = uiState.chats.getOrNull(uiState.currentChat?:-1)?.cansend?:false,
                 onDeleteChat = {
                     viewModel.deleteChat(uiState.currentChat!!)
                     viewModel.returnToChats()

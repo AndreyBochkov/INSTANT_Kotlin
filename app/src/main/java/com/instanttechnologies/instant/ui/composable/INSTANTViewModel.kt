@@ -28,6 +28,7 @@ import com.instanttechnologies.instant.network.INSTANTWSMessage
 import com.instanttechnologies.instant.security.EncryptedStorage
 import com.instanttechnologies.instant.utils.DateTimeConverter
 import com.instanttechnologies.instant.utils.showToast
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.update
@@ -54,6 +55,7 @@ class INSTANTViewModel(
 
     private val encryptedStorage = EncryptedStorage(application)
     private lateinit var webSocket: INSTANTWS
+    private var job: Job? = null
     private val _uiState = MutableStateFlow(INSTANTUiState())
     private var requestID = ""
 
@@ -62,11 +64,21 @@ class INSTANTViewModel(
     fun goForeground() {
         webSocket = INSTANTWS(encryptedStorage.loadAddress()?:application.getString(R.string.address))
 
-        viewModelScope.launch {
+        if (!webSocket.connected) {
+            _uiState.update {
+                it.copy(
+                    pageType = PageType.Settings
+                )
+            }
+            application.showToast(application.getString(R.string.new_address_needed))
+            return
+        }
+
+        job = viewModelScope.launch {
             webSocket.incomingMessages.collect { wsMessage ->
                 if (_uiState.value.backgroundWork == null) return@collect
 
-                Log.d(TAG, "VM is proceeding ${wsMessage.javaClass.name}")
+                Log.d(TAG, "VM is proceeding ${wsMessage.javaClass.simpleName}")
 
                 when (wsMessage) {
                     is INSTANTWSMessage.Ready -> {
@@ -364,6 +376,7 @@ class INSTANTViewModel(
     fun resetAddress(newAddress: String) {
         encryptedStorage.saveAddress(newAddress)
         webSocket.disconnect()
+        job?.cancel()
         initializeUIState()
         goForeground()
     }
@@ -599,5 +612,6 @@ class INSTANTViewModel(
     override fun onCleared() {
         super.onCleared()
         webSocket.disconnect()
+        job?.cancel()
     }
 }

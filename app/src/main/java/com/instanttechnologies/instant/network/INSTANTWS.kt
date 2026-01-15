@@ -51,20 +51,27 @@ class INSTANTWS(
     )
     val incomingMessages = _incomingMessages.asSharedFlow()
 
+    val connected: Boolean
+
     init {
-        connectWebSocket()
+        connected = connectWebSocket()
     }
 
-    private fun connectWebSocket() {
+    private fun connectWebSocket(): Boolean {
         webSocket?.close(1000, "Reconnecting")
         handshakeHelper = HandshakeHelper()
 
         val client = OkHttpClient()
 
-        val request = Request.Builder()
-            .url("ws://$address/api/instant")
-            .header("X-Client-Type", "instant")
-            .build()
+        val request: Request
+        try {
+            request = Request.Builder()
+                .url("ws://$address/api/instant")
+                .header("X-Client-Type", "instant")
+                .build()
+        } catch (e: IllegalArgumentException) {
+            return false
+        }
 
         webSocket = client.newWebSocket(request, object : WebSocketListener() {
             override fun onOpen(webSocket: WebSocket, response: Response) {
@@ -200,6 +207,7 @@ class INSTANTWS(
                 }
             }
         })
+        return true
     }
 
     fun disconnect() {
@@ -280,14 +288,6 @@ class INSTANTWS(
         webSocket?.send(
             ByteString.of(
                 *byteArrayOf(20)+handshakeHelper.encrypt(req, DeleteChatData.serializer())
-            )
-        )
-    }
-
-    fun checkVersion(version: String) {
-        webSocket?.send(
-            ByteString.of(
-                *byteArrayOf(47)+version.toByteArray()
             )
         )
     }
